@@ -167,4 +167,36 @@ def send_emails(job_id):
     db.session.commit()
     
     flash(f'Emails sent to {len(shortlisted)} shortlisted candidates.')
-    return redirect(url_for('hr.view_shortlisted', job_id=job_id)) 
+    return redirect(url_for('hr.view_shortlisted', job_id=job_id))
+
+
+@hr.route('/application/<int:application_id>/update-status', methods=['POST'])
+@login_required
+@hr_required
+def update_application_status(application_id):
+    application = JobApplication.query.get_or_404(application_id)
+    job = application.job
+    
+    # Check if job belongs to current HR
+    if job.hr_profile_id != current_user.hr_profile.id:
+        flash('You do not have permission to update this application.', 'danger')
+        return redirect(url_for('hr.view_jobs'))
+    
+    # Get the new status from form data
+    new_status = request.form.get('status')
+    if new_status not in ['pending', 'shortlisted', 'rejected']:
+        flash('Invalid status provided.', 'danger')
+        return redirect(url_for('hr.view_applications', job_id=job.id))
+    
+    # Update the application status
+    application.status = new_status
+    
+    # If shortlisting, set shortlisted_date
+    if new_status == 'shortlisted':
+        application.shortlisted_date = datetime.utcnow()
+    
+    db.session.commit()
+    
+    status_text = new_status.capitalize()
+    flash(f'Application status updated to {status_text}.', 'success')
+    return redirect(url_for('hr.view_applications', job_id=job.id)) 

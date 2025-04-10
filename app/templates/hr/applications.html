@@ -69,18 +69,111 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group">
-                                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                                         Actions
                                                     </button>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="#">View Resume</a>
-                                                        <div class="dropdown-divider"></div>
-                                                        {% if application.status != 'shortlisted' %}
-                                                            <a class="dropdown-item text-success" href="#">Shortlist</a>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#resumeModal{{ application.id }}">
+                                                            <i class="fas fa-file-alt me-2"></i> View Resume
+                                                        </a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <form action="{{ url_for('hr.update_application_status', application_id=application.id) }}" method="post" id="shortlistForm{{ application.id }}">
+                                                                <input type="hidden" name="status" value="shortlisted">
+                                                                <button type="submit" class="dropdown-item text-success {% if application.status == 'shortlisted' %}disabled{% endif %}">
+                                                                    <i class="fas fa-check-circle me-2"></i> Shortlist
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
+                                                            <form action="{{ url_for('hr.update_application_status', application_id=application.id) }}" method="post" id="rejectForm{{ application.id }}">
+                                                                <input type="hidden" name="status" value="rejected">
+                                                                <button type="submit" class="dropdown-item text-danger {% if application.status == 'rejected' %}disabled{% endif %}">
+                                                                    <i class="fas fa-times-circle me-2"></i> Reject
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        {% if application.status != 'pending' %}
+                                                        <li>
+                                                            <form action="{{ url_for('hr.update_application_status', application_id=application.id) }}" method="post" id="pendingForm{{ application.id }}">
+                                                                <input type="hidden" name="status" value="pending">
+                                                                <button type="submit" class="dropdown-item text-warning">
+                                                                    <i class="fas fa-clock me-2"></i> Mark as Pending
+                                                                </button>
+                                                            </form>
+                                                        </li>
                                                         {% endif %}
-                                                        {% if application.status != 'rejected' %}
-                                                            <a class="dropdown-item text-danger" href="#">Reject</a>
-                                                        {% endif %}
+                                                    </ul>
+                                                </div>
+                                                
+                                                <!-- Resume Modal -->
+                                                <div class="modal fade" id="resumeModal{{ application.id }}" tabindex="-1" aria-labelledby="resumeModalLabel{{ application.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="resumeModalLabel{{ application.id }}">
+                                                                    Resume for {{ application.student_profile.user.name }}
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <!-- Resume content would go here -->
+                                                                <div class="d-flex justify-content-center mb-3">
+                                                                    <a href="{{ url_for('static', filename='uploads/resumes/' + application.resume_filename) }}" class="btn btn-primary" target="_blank">
+                                                                        <i class="fas fa-download me-2"></i> Download Resume
+                                                                    </a>
+                                                                </div>
+                                                                <div class="card">
+                                                                    <div class="card-header">
+                                                                        <h6 class="mb-0">Application Details</h6>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-6">
+                                                                                <p><strong>Applied On:</strong> {{ application.application_date.strftime('%Y-%m-%d') }}</p>
+                                                                                <p><strong>Status:</strong> 
+                                                                                    {% if application.status == 'shortlisted' %}
+                                                                                        <span class="badge badge-success">Shortlisted</span>
+                                                                                    {% elif application.status == 'rejected' %}
+                                                                                        <span class="badge badge-danger">Rejected</span>
+                                                                                    {% else %}
+                                                                                        <span class="badge badge-warning">Pending</span>
+                                                                                    {% endif %}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div class="col-md-6">
+                                                                                <p><strong>Match Score:</strong> {{ application.similarity_score }}%</p>
+                                                                                <p><strong>Email:</strong> {{ application.student_profile.user.email }}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                        
+                                                                        <div class="mb-3">
+                                                                            <h6>Update Status</h6>
+                                                                            <div class="d-flex gap-2">
+                                                                                <form action="{{ url_for('hr.update_application_status', application_id=application.id) }}" method="post">
+                                                                                    <input type="hidden" name="status" value="shortlisted">
+                                                                                    <button type="submit" class="btn btn-sm btn-success {% if application.status == 'shortlisted' %}disabled{% endif %}">
+                                                                                        <i class="fas fa-check-circle"></i> Shortlist
+                                                                                    </button>
+                                                                                </form>
+                                                                                <form action="{{ url_for('hr.update_application_status', application_id=application.id) }}" method="post">
+                                                                                    <input type="hidden" name="status" value="rejected">
+                                                                                    <button type="submit" class="btn btn-sm btn-danger {% if application.status == 'rejected' %}disabled{% endif %}">
+                                                                                        <i class="fas fa-times-circle"></i> Reject
+                                                                                    </button>
+                                                                                </form>
+                                                                                <form action="{{ url_for('hr.update_application_status', application_id=application.id) }}" method="post">
+                                                                                    <input type="hidden" name="status" value="pending">
+                                                                                    <button type="submit" class="btn btn-sm btn-warning {% if application.status == 'pending' %}disabled{% endif %}">
+                                                                                        <i class="fas fa-clock"></i> Pending
+                                                                                    </button>
+                                                                                </form>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -104,9 +197,21 @@
 {{ super() }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Set progress bar widths
         document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
             const width = bar.getAttribute('data-width');
             bar.style.width = width + '%';
+        });
+        
+        // Confirmation for status changes
+        document.querySelectorAll('form[id^="shortlistForm"], form[id^="rejectForm"], form[id^="pendingForm"]').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                const action = form.id.includes('shortlist') ? 'shortlist' : 
+                               form.id.includes('reject') ? 'reject' : 'mark as pending';
+                if (!confirm(`Are you sure you want to ${action} this candidate?`)) {
+                    e.preventDefault();
+                }
+            });
         });
     });
 </script>
