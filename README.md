@@ -37,7 +37,7 @@ A smart job application platform that uses AI to match candidates with job posti
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/resume-screening-app.git
+   git clone https://github.com/Sandipan003/Talent-Match.git
    cd resume-screening-app
    ```
 
