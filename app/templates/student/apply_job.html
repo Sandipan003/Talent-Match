@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('student.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('student.browse_jobs') }}">Jobs</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('student.view_job', job_id=job.id) }}">{{ job.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Apply</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Apply for {{ job.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">How it works:</h5>
+                        <p>Our AI-powered system will analyze your resume and match it against the job description using advanced NLP techniques.</p>
+                        <p class="mb-0">If your resume achieves a match score of 70% or higher, you will be automatically shortlisted for this position.</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Job Details:</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Company:</strong> {{ job.hr_profile.company_name }}</p>
+                                            <p><strong>Location:</strong> {{ job.location }}</p>
+                                            <p><strong>Job Type:</strong> {{ job.job_type }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Posted On:</strong> {{ job.posted_date.strftime('%Y-%m-%d') }}</p>
+                                            {% if job.closing_date %}
+                                                <p><strong>Closing Date:</strong> {{ job.closing_date.strftime('%Y-%m-%d') }}</p>
+                                            {% endif %}
+                                            {% if job.salary_range %}
+                                                <p><strong>Salary Range:</strong> {{ job.salary_range }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('student.apply_job', job_id=job.id) }}" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="resume">Upload Resume *</label>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="resume" name="resume" required accept=".pdf,.docx,.txt">
+                                <label class="custom-file-label" for="resume">Choose file...</label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Accepted formats: PDF, DOCX, TXT. Maximum size: 5MB.
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cover_note">Cover Note (Optional)</label>
+                            <textarea class="form-control" id="cover_note" name="cover_note" rows="4" placeholder="Add a short note to the hiring manager..."></textarea>
+                        </div>
+                        
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I confirm that all information provided is accurate and I am eligible to work for the mentioned position.
+                            </label>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane mr-2"></i>Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Update file input label to show selected filename
+    document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+        var fileName = e.target.files[0].name;
+        var nextSibling = e.target.nextElementSibling;
+        nextSibling.innerText = fileName;
+    });
+</script>
+{% endblock %} 

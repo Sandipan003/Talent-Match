@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}My Posted Jobs{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>My Posted Jobs</h2>
+            <p class="lead">Manage your job listings</p>
+            <hr>
+            <a href="{{ url_for('hr.post_job') }}" class="btn btn-primary mb-3">
+                <i class="fas fa-plus-circle"></i> Post New Job
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Job Listings</h5>
+                </div>
+                <div class="card-body">
+                    {% if jobs %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Posted</th>
+                                        <th>Applications</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in jobs %}
+                                        <tr>
+                                            <td>{{ job.title }}</td>
+                                            <td>{{ job.category }}</td>
+                                            <td>{{ job.posted_date.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                <span class="badge badge-info">{{ job.applications.count() }}</span>
+                                            </td>
+                                            <td>
+                                                {% if job.is_active %}
+                                                    <span class="badge badge-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge badge-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('hr.view_job', job_id=job.id) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                <a href="{{ url_for('hr.view_shortlisted', job_id=job.id) }}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-user-check"></i> Shortlisted
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="lead mb-3">You haven't posted any jobs yet.</p>
+                            <a href="{{ url_for('hr.post_job') }}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle"></i> Post Your First Job
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

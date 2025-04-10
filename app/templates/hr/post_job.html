@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Post a Job{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('hr.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Post a Job</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Post a New Job</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('hr.post_job') }}">
+                        <div class="form-group">
+                            <label for="title">Job Title *</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Job Description *</label>
+                            <textarea class="form-control" id="description" name="description" rows="6" required placeholder="Provide a detailed description of the job, including responsibilities, qualifications, and any other relevant information."></textarea>
+                            <small class="form-text text-muted">This description will be used to match with candidate resumes.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="requirements">Requirements</label>
+                            <textarea class="form-control" id="requirements" name="requirements" rows="4" placeholder="List specific requirements, skills, or qualifications needed for this job."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="location">Location *</label>
+                                    <input type="text" class="form-control" id="location" name="location" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="job_type">Job Type *</label>
+                                    <select class="form-control" id="job_type" name="job_type" required>
+                                        <option value="">Select Job Type</option>
+                                        <option value="Full-time">Full-time</option>
+                                        <option value="Part-time">Part-time</option>
+                                        <option value="Contract">Contract</option>
+                                        <option value="Internship">Internship</option>
+                                        <option value="Remote">Remote</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="salary_range">Salary Range</label>
+                                    <input type="text" class="form-control" id="salary_range" name="salary_range" placeholder="e.g. $50,000 - $70,000">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="closing_date">Closing Date</label>
+                                    <input type="date" class="form-control" id="closing_date" name="closing_date">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+                            <label class="form-check-label" for="is_active">Make this job active immediately</label>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane mr-2"></i>Post Job
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

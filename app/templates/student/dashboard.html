@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Student Dashboard</h2>
+            <p class="lead">Welcome, {{ current_user.first_name }} {{ current_user.last_name }}</p>
+            <hr>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Applications</h6>
+                            <h2 class="card-text">{{ applications|length }}</h2>
+                        </div>
+                        <i class="fas fa-file-alt fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('student.view_applications') }}" class="text-white">View Applications <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Pending Applications</h6>
+                            <h2 class="card-text">{{ pending_count }}</h2>
+                        </div>
+                        <i class="fas fa-hourglass-half fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('student.view_applications') }}" class="text-white">View Pending <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Shortlisted</h6>
+                            <h2 class="card-text">{{ shortlisted_count }}</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x"></i>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('student.view_applications') }}" class="text-white">View Shortlisted <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Applications</h5>
+                        <a href="{{ url_for('student.browse_jobs') }}" class="btn btn-primary">
+                            <i class="fas fa-search mr-1"></i> Browse Jobs
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if applications %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Job Title</th>
+                                        <th>Applied On</th>
+                                        <th>Match Score</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for application in applications[:5] %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('student.view_job', job_id=application.job.id) }}">
+                                                    {{ application.job.title }}
+                                                </a>
+                                            </td>
+                                            <td>{{ application.application_date.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                {% if application.similarity_score %}
+                                                    {{ application.similarity_score }}%
+                                                {% else %}
+                                                    --
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if application.status == 'shortlisted' %}
+                                                    <span class="badge badge-success">Shortlisted</span>
+                                                {% elif application.status == 'rejected' %}
+                                                    <span class="badge badge-danger">Rejected</span>
+                                                {% else %}
+                                                    <span class="badge badge-warning">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% if applications|length > 5 %}
+                                <div class="text-center mt-3">
+                                    <a href="{{ url_for('student.view_applications') }}" class="btn btn-outline-primary">
+                                        View All Applications
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="lead mb-3">You haven't applied to any jobs yet.</p>
+                            <a href="{{ url_for('student.browse_jobs') }}" class="btn btn-primary">
+                                <i class="fas fa-search mr-1"></i> Browse Available Jobs
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recommended Jobs</h5>
+                </div>
+                <div class="card-body">
+                    {% if recommended_jobs %}
+                        <div class="list-group">
+                            {% for job in recommended_jobs %}
+                                <a href="{{ url_for('student.view_job', job_id=job.id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ job.title }}</h6>
+                                        <small>{{ job.posted_date.strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                    <p class="mb-1 text-muted small">{{ job.location }} | {{ job.job_type }}</p>
+                                    <small>{{ job.description|truncate(80) }}</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center py-4">No recommended jobs found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('student.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('student.browse_jobs') }}">Jobs</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ job.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ job.title }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-4">
+                        <h5 class="text-primary">{{ job.hr_profile.company_name }}</h5>
+                        <div>
+                            <span class="badge badge-primary mr-2">{{ job.job_type }}</span>
+                            <span class="badge badge-secondary">{{ job.location }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Job Description</h5>
+                        <p class="text-justify">{{ job.description|nl2br }}</p>
+                    </div>
+                    
+                    {% if job.requirements %}
+                    <div class="mb-4">
+                        <h5>Requirements</h5>
+                        <p class="text-justify">{{ job.requirements|nl2br }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if not application %}
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('student.apply_job', job_id=job.id) }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane mr-2"></i>Apply Now
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">You have already applied for this job!</h5>
+                            <p>Application Date: {{ application.application_date.strftime('%Y-%m-%d') }}</p>
+                            {% if application.similarity_score %}
+                                <p>Match Score: {{ application.similarity_score }}%</p>
+                            {% endif %}
+                            <p class="mb-0">Status: 
+                                {% if application.status == 'shortlisted' %}
+                                    <span class="badge badge-success">Shortlisted</span>
+                                {% elif application.status == 'rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Job Details</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-building mr-2 text-primary"></i>
+                            <strong>Company:</strong> {{ job.hr_profile.company_name }}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-map-marker-alt mr-2 text-primary"></i>
+                            <strong>Location:</strong> {{ job.location }}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-briefcase mr-2 text-primary"></i>
+                            <strong>Job Type:</strong> {{ job.job_type }}
+                        </li>
+                        {% if job.salary_range %}
+                        <li class="mb-3">
+                            <i class="fas fa-dollar-sign mr-2 text-primary"></i>
+                            <strong>Salary Range:</strong> {{ job.salary_range }}
+                        </li>
+                        {% endif %}
+                        <li class="mb-3">
+                            <i class="fas fa-calendar-alt mr-2 text-primary"></i>
+                            <strong>Posted Date:</strong> {{ job.posted_date.strftime('%Y-%m-%d') }}
+                        </li>
+                        {% if job.closing_date %}
+                        <li class="mb-3">
+                            <i class="fas fa-clock mr-2 text-primary"></i>
+                            <strong>Closing Date:</strong> {{ job.closing_date.strftime('%Y-%m-%d') }}
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    {% if job.hr_profile.company_website %}
+                    <a href="{{ job.hr_profile.company_website }}" target="_blank" class="btn btn-outline-primary btn-block">
+                        <i class="fas fa-globe mr-2"></i>Visit Company Website
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">AI Match Information</h5>
+                </div>
+                <div class="card-body">
+                    <p>Our AI system will analyze your resume against this job description using advanced NLP techniques.</p>
+                    <p>If your resume achieves a match score of 70% or higher, you'll be automatically shortlisted.</p>
+                    
+                    <div class="alert alert-primary mt-3 mb-0">
+                        <strong>Pro Tip:</strong> Make sure your resume highlights skills and experiences relevant to this position for a better match score.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

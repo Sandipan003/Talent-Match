@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Jobs{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Browse Jobs</h2>
+            <p class="lead">Find your next opportunity with AI-powered matching</p>
+            <hr>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('student.browse_jobs') }}">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="search">Search</label>
+                                    <input type="text" class="form-control" id="search" name="search" placeholder="Job title, keywords..." value="{{ search if search }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="location">Location</label>
+                                    <input type="text" class="form-control" id="location" name="location" placeholder="City, country..." value="{{ location if location }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="job_type">Job Type</label>
+                                    <select class="form-control" id="job_type" name="job_type">
+                                        <option value="">All Types</option>
+                                        <option value="Full-time" {% if job_type == 'Full-time' %}selected{% endif %}>Full-time</option>
+                                        <option value="Part-time" {% if job_type == 'Part-time' %}selected{% endif %}>Part-time</option>
+                                        <option value="Contract" {% if job_type == 'Contract' %}selected{% endif %}>Contract</option>
+                                        <option value="Internship" {% if job_type == 'Internship' %}selected{% endif %}>Internship</option>
+                                        <option value="Remote" {% if job_type == 'Remote' %}selected{% endif %}>Remote</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search mr-1"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            {% if jobs %}
+                <div class="card-columns">
+                    {% for job in jobs %}
+                        <div class="card job-listing">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ job.title }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{ job.hr_profile.company_name }}</h6>
+                                
+                                <div class="mb-2">
+                                    <span class="badge badge-primary">{{ job.job_type }}</span>
+                                    <span class="badge badge-secondary">{{ job.location }}</span>
+                                </div>
+                                
+                                <p class="card-text">{{ job.description|truncate(150) }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">Posted: {{ job.posted_date.strftime('%Y-%m-%d') }}</small>
+                                    
+                                    {% if job.id in applied_job_ids %}
+                                        <span class="badge badge-success">Applied</span>
+                                    {% else %}
+                                        <a href="{{ url_for('student.view_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <p class="mb-0">No jobs found matching your criteria. Try adjusting your search filters.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

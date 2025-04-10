@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}My Applications{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>My Applications</h2>
+            <p class="lead">Track and manage your job applications</p>
+            <hr>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="applicationTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="all-tab" data-toggle="tab" href="#all">
+                                All Applications <span class="badge badge-primary">{{ applications|length }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pending-tab" data-toggle="tab" href="#pending">
+                                Pending <span class="badge badge-warning">{{ applications|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="shortlisted-tab" data-toggle="tab" href="#shortlisted">
+                                Shortlisted <span class="badge badge-success">{{ applications|selectattr('status', 'equalto', 'shortlisted')|list|length }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="rejected-tab" data-toggle="tab" href="#rejected">
+                                Rejected <span class="badge badge-danger">{{ applications|selectattr('status', 'equalto', 'rejected')|list|length }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="applicationTabsContent">
+                        <!-- All Applications Tab -->
+                        <div class="tab-pane fade show active" id="all">
+                            {% if applications %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Job Title</th>
+                                                <th>Company</th>
+                                                <th>Applied On</th>
+                                                <th>Match Score</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for application in applications %}
+                                                <tr>
+                                                    <td>{{ application.job.title }}</td>
+                                                    <td>{{ application.job.hr_profile.company_name }}</td>
+                                                    <td>{{ application.application_date.strftime('%Y-%m-%d') }}</td>
+                                                    <td>
+                                                        {% if application.similarity_score %}
+                                                            <div class="progress" style="height: 20px;">
+                                                                <div class="progress-bar {% if application.similarity_score >= 70 %}bg-success{% else %}bg-warning{% endif %}" 
+                                                                     data-width="{{ application.similarity_score }}">
+                                                                    {{ application.similarity_score }}%
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            <span class="text-muted">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if application.status == 'shortlisted' %}
+                                                            <span class="badge badge-success">Shortlisted</span>
+                                                        {% elif application.status == 'rejected' %}
+                                                            <span class="badge badge-danger">Rejected</span>
+                                                        {% else %}
+                                                            <span class="badge badge-warning">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ url_for('student.view_job', job_id=application.job.id) }}" class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i> View Job
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <p class="lead mb-3">You haven't applied to any jobs yet.</p>
+                                    <a href="{{ url_for('student.browse_jobs') }}" class="btn btn-primary">
+                                        <i class="fas fa-search mr-1"></i> Browse Available Jobs
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Pending Applications Tab -->
+                        <div class="tab-pane fade" id="pending">
+                            {% set pending_applications = applications|selectattr('status', 'equalto', 'pending')|list %}
+                            {% if pending_applications %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Job Title</th>
+                                                <th>Company</th>
+                                                <th>Applied On</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for application in pending_applications %}
+                                                <tr>
+                                                    <td>{{ application.job.title }}</td>
+                                                    <td>{{ application.job.hr_profile.company_name }}</td>
+                                                    <td>{{ application.application_date.strftime('%Y-%m-%d') }}</td>
+                                                    <td>
+                                                        <a href="{{ url_for('student.view_job', job_id=application.job.id) }}" class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i> View Job
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info text-center">
+                                    <p class="mb-0">You don't have any pending applications.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Shortlisted Applications Tab -->
+                        <div class="tab-pane fade" id="shortlisted">
+                            {% set shortlisted_applications = applications|selectattr('status', 'equalto', 'shortlisted')|list %}
+                            {% if shortlisted_applications %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Job Title</th>
+                                                <th>Company</th>
+                                                <th>Applied On</th>
+                                                <th>Match Score</th>
+                                                <th>Email Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for application in shortlisted_applications %}
+                                                <tr>
+                                                    <td>{{ application.job.title }}</td>
+                                                    <td>{{ application.job.hr_profile.company_name }}</td>
+                                                    <td>{{ application.application_date.strftime('%Y-%m-%d') }}</td>
+                                                    <td>
+                                                        <div class="progress" style="height: 20px;">
+                                                            <div class="progress-bar bg-success" 
+                                                                 data-width="{{ application.similarity_score }}">
+                                                                {{ application.similarity_score }}%
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {% if application.email_sent %}
+                                                            <span class="badge badge-success">Email Received</span>
+                                                        {% else %}
+                                                            <span class="badge badge-warning">No Email Yet</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ url_for('student.view_job', job_id=application.job.id) }}" class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i> View Job
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info text-center">
+                                    <p class="mb-0">You don't have any shortlisted applications yet.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Rejected Applications Tab -->
+                        <div class="tab-pane fade" id="rejected">
+                            {% set rejected_applications = applications|selectattr('status', 'equalto', 'rejected')|list %}
+                            {% if rejected_applications %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Job Title</th>
+                                                <th>Company</th>
+                                                <th>Applied On</th>
+                                                <th>Match Score</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for application in rejected_applications %}
+                                                <tr>
+                                                    <td>{{ application.job.title }}</td>
+                                                    <td>{{ application.job.hr_profile.company_name }}</td>
+                                                    <td>{{ application.application_date.strftime('%Y-%m-%d') }}</td>
+                                                    <td>
+                                                        {% if application.similarity_score %}
+                                                            <div class="progress" style="height: 20px;">
+                                                                <div class="progress-bar bg-danger" 
+                                                                     data-width="{{ application.similarity_score }}">
+                                                                    {{ application.similarity_score }}%
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            <span class="text-muted">Not Available</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ url_for('student.view_job', job_id=application.job.id) }}" class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i> View Job
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info text-center">
+                                    <p class="mb-0">You don't have any rejected applications.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
+            const width = bar.getAttribute('data-width');
+            bar.style.width = width + '%';
+        });
+    });
+</script>
+{% endblock %} 
