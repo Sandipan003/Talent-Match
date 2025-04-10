@@ -31,19 +31,9 @@
                         <p>{{ job.description|safe }}</p>
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h5>Requirements</h5>
-                            <p>{{ job.requirements|safe }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Skills Required</h5>
-                            <div>
-                                {% for skill in job.skills.split(',') %}
-                                    <span class="badge badge-info mb-1">{{ skill.strip() }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <h5>Requirements</h5>
+                        <p>{{ job.requirements|safe }}</p>
                     </div>
                     
                     <div class="row">
@@ -58,11 +48,11 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <a href="#" class="btn btn-warning">
+                    <a href="{{ url_for('hr.edit_job', job_id=job.id) }}" class="btn btn-warning">
                         <i class="fas fa-edit"></i> Edit Job
                     </a>
-                    <a href="#" class="btn btn-danger">
-                        <i class="fas fa-times-circle"></i> {% if job.is_active %}Deactivate{% else %}Activate{% endif %}
+                    <a href="{{ url_for('hr.toggle_job_status', job_id=job.id) }}" class="btn btn-danger">
+                        <i class="fas fa-power-off"></i> {% if job.is_active %}Deactivate{% else %}Activate{% endif %}
                     </a>
                 </div>
             </div>

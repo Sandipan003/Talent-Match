@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, send_file
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
@@ -163,7 +163,8 @@ def apply_job(job_id):
 @student_required
 def view_applications():
     applications = JobApplication.query.filter_by(student_profile_id=current_user.student_profile.id).order_by(JobApplication.application_date.desc()).all()
-    return render_template('student/applications.html', applications=applications)
+    tab = request.args.get('tab', 'all')  # Get the tab parameter from the URL, default to 'all'
+    return render_template('student/applications.html', applications=applications, active_tab=tab)
 
 
 @student.route('/profile', methods=['GET', 'POST'])
@@ -187,4 +188,20 @@ def edit_profile():
         flash('Profile updated successfully.')
         return redirect(url_for('student.edit_profile'))
     
-    return render_template('student/edit_profile.html') 
+    return render_template('student/edit_profile.html')
+
+
+@student.route('/view-resume')
+@login_required
+@student_required
+def view_resume():
+    """Serve the current user's resume file"""
+    # Get the resume path from student profile
+    resume_path = current_user.student_profile.resume_path
+    
+    # Check if resume exists
+    if resume_path and os.path.exists(resume_path):
+        return send_file(resume_path, as_attachment=False)
+    else:
+        flash('Resume file not found.', 'danger')
+        return redirect(url_for('student.edit_profile')) 

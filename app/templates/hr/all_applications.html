@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}All Applications{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('hr.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">All Applications</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">All Applications</h4>
+                        <span class="badge bg-primary px-3 py-2">Total: {{ applications|length }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if applications %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Job Title</th>
+                                        <th>Candidate</th>
+                                        <th>Match Score</th>
+                                        <th>Applied On</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for application in applications %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('hr.view_job', job_id=application.job.id) }}">
+                                                    {{ application.job.title }}
+                                                </a>
+                                            </td>
+                                            <td>{{ application.student_profile.user.first_name }} {{ application.student_profile.user.last_name }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px; border-radius: 10px;">
+                                                    <div class="progress-bar {% if application.similarity_score >= 70 %}bg-success{% else %}bg-warning{% endif %}" 
+                                                         role="progressbar"
+                                                         style="width: {{ application.similarity_score }}%;">
+                                                        <span class="fw-bold">{{ application.similarity_score }}%</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ application.application_date.strftime('%b %d, %Y') }}</td>
+                                            <td>
+                                                {% if application.status == 'shortlisted' %}
+                                                    <span class="badge bg-success py-2 px-3">Shortlisted</span>
+                                                {% elif application.status == 'rejected' %}
+                                                    <span class="badge bg-danger py-2 px-3">Rejected</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning py-2 px-3 text-dark">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ url_for('hr.view_resume', application_id=application.id) }}" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-file-pdf me-1"></i> Resume
+                                                    </a>
+                                                    {% if application.status != 'shortlisted' %}
+                                                        <a href="{{ url_for('hr.shortlist_application', application_id=application.id) }}" class="btn btn-sm btn-success">
+                                                            <i class="fas fa-check me-1"></i> Shortlist
+                                                        </a>
+                                                    {% endif %}
+                                                    {% if application.status != 'rejected' %}
+                                                        <a href="{{ url_for('hr.reject_application', application_id=application.id) }}" class="btn btn-sm btn-danger">
+                                                            <i class="fas fa-times me-1"></i> Reject
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <p class="mb-0">No applications have been received for your job postings yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

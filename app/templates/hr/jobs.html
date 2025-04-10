@@ -42,22 +42,26 @@
                                             <td>{{ job.category }}</td>
                                             <td>{{ job.posted_date.strftime('%Y-%m-%d') }}</td>
                                             <td>
-                                                <span class="badge badge-info">{{ job.applications.count() }}</span>
+                                                <a href="{{ url_for('hr.view_applications', job_id=job.id) }}" class="d-block text-center">
+                                                    <span class="badge bg-info rounded-pill px-3 py-2">{{ job.applications.count() }}</span>
+                                                </a>
                                             </td>
                                             <td>
                                                 {% if job.is_active %}
-                                                    <span class="badge badge-success">Active</span>
+                                                    <span class="badge bg-success">Active</span>
                                                 {% else %}
-                                                    <span class="badge badge-secondary">Inactive</span>
+                                                    <span class="badge bg-secondary">Inactive</span>
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <a href="{{ url_for('hr.view_job', job_id=job.id) }}" class="btn btn-sm btn-info">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
-                                                <a href="{{ url_for('hr.view_shortlisted', job_id=job.id) }}" class="btn btn-sm btn-success">
-                                                    <i class="fas fa-user-check"></i> Shortlisted
-                                                </a>
+                                                <div class="d-flex gap-1">
+                                                    <a href="{{ url_for('hr.view_job', job_id=job.id) }}" class="btn btn-sm btn-info">
+                                                        <i class="fas fa-eye me-1"></i> View
+                                                    </a>
+                                                    <a href="{{ url_for('hr.view_shortlisted', job_id=job.id) }}" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-user-check me-1"></i> Shortlisted
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}

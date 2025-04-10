@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, send_file
 from flask_login import login_required, current_user
 from app import db, mail
 from app.models.user import User, HRProfile
@@ -6,6 +6,7 @@ from app.models.job import Job, JobApplication
 from app.utils.decorators import hr_required
 from flask_mail import Message
 from datetime import datetime
+import os
 
 hr = Blueprint('hr', __name__)
 
@@ -170,33 +171,202 @@ def send_emails(job_id):
     return redirect(url_for('hr.view_shortlisted', job_id=job_id))
 
 
-@hr.route('/application/<int:application_id>/update-status', methods=['POST'])
+@hr.route('/job/<int:job_id>/edit', methods=['GET', 'POST'])
 @login_required
 @hr_required
-def update_application_status(application_id):
-    application = JobApplication.query.get_or_404(application_id)
-    job = application.job
+def edit_job(job_id):
+    job = Job.query.get_or_404(job_id)
     
     # Check if job belongs to current HR
     if job.hr_profile_id != current_user.hr_profile.id:
-        flash('You do not have permission to update this application.', 'danger')
+        flash('You do not have permission to edit this job.')
         return redirect(url_for('hr.view_jobs'))
     
-    # Get the new status from form data
-    new_status = request.form.get('status')
-    if new_status not in ['pending', 'shortlisted', 'rejected']:
-        flash('Invalid status provided.', 'danger')
-        return redirect(url_for('hr.view_applications', job_id=job.id))
+    if request.method == 'POST':
+        # Update job details
+        job.title = request.form.get('title')
+        job.description = request.form.get('description')
+        job.requirements = request.form.get('requirements')
+        job.location = request.form.get('location')
+        job.job_type = request.form.get('job_type')
+        job.salary_range = request.form.get('salary_range')
+        
+        # Handle is_active checkbox
+        job.is_active = 'is_active' in request.form
+        
+        # Handle closing date
+        closing_date_str = request.form.get('closing_date')
+        if closing_date_str:
+            try:
+                closing_date = datetime.strptime(closing_date_str, '%Y-%m-%d')
+                job.closing_date = closing_date
+            except ValueError:
+                flash('Invalid date format for closing date.', 'warning')
+                return render_template('hr/edit_job.html', job=job)
+        else:
+            job.closing_date = None
+        
+        db.session.commit()
+        
+        flash('Job updated successfully!', 'success')
+        return redirect(url_for('hr.view_job', job_id=job.id))
     
-    # Update the application status
-    application.status = new_status
+    return render_template('hr/edit_job.html', job=job)
+
+
+@hr.route('/job/<int:job_id>/toggle-status')
+@login_required
+@hr_required
+def toggle_job_status(job_id):
+    job = Job.query.get_or_404(job_id)
     
-    # If shortlisting, set shortlisted_date
-    if new_status == 'shortlisted':
-        application.shortlisted_date = datetime.utcnow()
+    # Check if job belongs to current HR
+    if job.hr_profile_id != current_user.hr_profile.id:
+        flash('You do not have permission to modify this job.', 'danger')
+        return redirect(url_for('hr.view_jobs'))
     
+    # Toggle the status
+    job.is_active = not job.is_active
     db.session.commit()
     
-    status_text = new_status.capitalize()
-    flash(f'Application status updated to {status_text}.', 'success')
-    return redirect(url_for('hr.view_applications', job_id=job.id)) 
+    status_msg = "activated" if job.is_active else "deactivated"
+    flash(f'Job "{job.title}" has been {status_msg}.', 'success')
+    
+    return redirect(url_for('hr.view_job', job_id=job.id))
+
+
+@hr.route('/application/<int:application_id>/shortlist')
+@login_required
+@hr_required
+def shortlist_application(application_id):
+    application = JobApplication.query.get_or_404(application_id)
+    job = Job.query.get_or_404(application.job_id)
+    
+    # Check if job belongs to current HR
+    if job.hr_profile_id != current_user.hr_profile.id:
+        flash('You do not have permission to manage applications for this job.', 'danger')
+        return redirect(url_for('hr.view_jobs'))
+    
+    # Update application status
+    application.status = 'shortlisted'
+    db.session.commit()
+    
+    flash('Candidate has been shortlisted successfully!', 'success')
+    return redirect(url_for('hr.view_applications', job_id=job.id))
+
+
+@hr.route('/application/<int:application_id>/reject')
+@login_required
+@hr_required
+def reject_application(application_id):
+    application = JobApplication.query.get_or_404(application_id)
+    job = Job.query.get_or_404(application.job_id)
+    
+    # Check if job belongs to current HR
+    if job.hr_profile_id != current_user.hr_profile.id:
+        flash('You do not have permission to manage applications for this job.', 'danger')
+        return redirect(url_for('hr.view_jobs'))
+    
+    # Update application status
+    application.status = 'rejected'
+    db.session.commit()
+    
+    flash('Application has been rejected.', 'info')
+    return redirect(url_for('hr.view_applications', job_id=job.id))
+
+
+@hr.route('/application/<int:application_id>/view-resume')
+@login_required
+@hr_required
+def view_resume(application_id):
+    application = JobApplication.query.get_or_404(application_id)
+    job = Job.query.get_or_404(application.job_id)
+    
+    # Check if job belongs to current HR
+    if job.hr_profile_id != current_user.hr_profile.id:
+        flash('You do not have permission to view resumes for this job.', 'danger')
+        return redirect(url_for('hr.view_jobs'))
+    
+    # Get the resume path and render it or redirect to it
+    resume_path = application.resume_path
+    student_name = f"{application.student_profile.user.first_name} {application.student_profile.user.last_name}"
+    
+    return render_template('hr/view_resume.html', 
+                          application=application, 
+                          job=job, 
+                          resume_path=resume_path,
+                          student_name=student_name)
+
+
+@hr.route('/application/<int:application_id>/resume')
+@login_required
+@hr_required
+def serve_resume(application_id):
+    """Serve resume file for a specific application"""
+    application = JobApplication.query.get_or_404(application_id)
+    job = Job.query.get_or_404(application.job_id)
+    
+    # Check if job belongs to current HR
+    if job.hr_profile_id != current_user.hr_profile.id:
+        flash('You do not have permission to view resumes for this job.', 'danger')
+        return redirect(url_for('hr.view_jobs'))
+    
+    # Get just the filename from the resume path
+    if os.path.exists(application.resume_path):
+        return send_file(application.resume_path, as_attachment=False)
+    else:
+        flash('Resume file not found.', 'danger')
+        return redirect(url_for('hr.view_shortlisted', job_id=job.id))
+
+
+@hr.route('/all-applications')
+@login_required
+@hr_required
+def view_all_applications():
+    """View all applications across all jobs posted by the HR"""
+    # Get all jobs by this HR
+    jobs = Job.query.filter_by(hr_profile_id=current_user.hr_profile.id).all()
+    job_ids = [job.id for job in jobs]
+    
+    # Get all applications for these jobs
+    applications = JobApplication.query.filter(JobApplication.job_id.in_(job_ids)).order_by(JobApplication.application_date.desc()).all()
+    
+    # Group applications by job
+    applications_by_job = {}
+    for app in applications:
+        if app.job_id not in applications_by_job:
+            applications_by_job[app.job_id] = []
+        applications_by_job[app.job_id].append(app)
+    
+    return render_template('hr/all_applications.html', 
+                          applications=applications, 
+                          applications_by_job=applications_by_job, 
+                          jobs=jobs)
+
+
+@hr.route('/all-shortlisted')
+@login_required
+@hr_required
+def view_all_shortlisted():
+    """View all shortlisted candidates across all jobs posted by the HR"""
+    # Get all jobs by this HR
+    jobs = Job.query.filter_by(hr_profile_id=current_user.hr_profile.id).all()
+    job_ids = [job.id for job in jobs]
+    
+    # Get all shortlisted applications for these jobs
+    shortlisted = JobApplication.query.filter(
+        JobApplication.job_id.in_(job_ids),
+        JobApplication.status == 'shortlisted'
+    ).order_by(JobApplication.similarity_score.desc()).all()
+    
+    # Group shortlisted applications by job
+    shortlisted_by_job = {}
+    for app in shortlisted:
+        if app.job_id not in shortlisted_by_job:
+            shortlisted_by_job[app.job_id] = []
+        shortlisted_by_job[app.job_id].append(app)
+    
+    return render_template('hr/all_shortlisted.html', 
+                          shortlisted=shortlisted, 
+                          shortlisted_by_job=shortlisted_by_job, 
+                          jobs=jobs) 

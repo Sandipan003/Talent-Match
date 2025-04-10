@@ -10,6 +10,7 @@ A smart job application platform that uses AI to match candidates with job posti
 - Auto-screening of candidates with AI-powered matching
 - Shortlist candidates based on resume match score
 - Send email notifications to shortlisted candidates
+- View all applications and shortlisted candidates from dashboard
 
 ### For Students/Job Seekers
 - Create profile and upload resume
@@ -18,11 +19,34 @@ A smart job application platform that uses AI to match candidates with job posti
 - Track application status
 - View match scores for applications
 
+## Recent Improvements
+
+### UI Enhancements
+- Updated to Bootstrap 5 for modern responsive design
+- Improved UI for status badges, buttons, and cards
+- Enhanced progress bars for better score visualization
+- Fixed resume display and download functionality
+- Added proper spacing and padding for better readability
+
+### Functionality Improvements
+- Added direct access to all applications from dashboard
+- Added direct access to all shortlisted candidates from dashboard
+- Fixed resume preview and download functionality
+- Improved status display for applications and jobs
+- Enhanced modal dialogs for email notifications
+
+### Code Improvements
+- Fixed inline styles with proper CSS classes
+- Updated deprecated Bootstrap 4 classes to Bootstrap 5
+- Improved naming consistency for routes and templates
+- Fixed user name handling throughout the application
+- Enhanced data flow between controllers and views
+
 ## Technology Stack
 
 - **Backend**: Flask (Python)
 - **Database**: SQLAlchemy with SQLite
-- **Frontend**: Bootstrap, HTML, CSS, JavaScript
+- **Frontend**: Bootstrap 5, HTML, CSS, JavaScript
 - **AI/ML**: NLTK, scikit-learn for NLP and resume analysis
 - **Authentication**: Flask-Login
 - **Email**: Flask-Mail

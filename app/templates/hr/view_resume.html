@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student_name }}'s Resume{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('hr.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('hr.view_jobs') }}">My Jobs</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('hr.view_job', job_id=job.id) }}">{{ job.title }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('hr.view_applications', job_id=job.id) }}">Applications</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Resume</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Applicant Details</h5>
+                </div>
+                <div class="card-body">
+                    <h5>{{ student_name }}</h5>
+                    <p><strong>Email:</strong> {{ application.student_profile.user.email }}</p>
+                    <p><strong>Applied on:</strong> {{ application.application_date.strftime('%Y-%m-%d') }}</p>
+                    <p><strong>Status:</strong> 
+                        {% if application.status == 'shortlisted' %}
+                            <span class="badge bg-success py-2 px-3">Shortlisted</span>
+                        {% elif application.status == 'rejected' %}
+                            <span class="badge bg-danger py-2 px-3">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-warning py-2 px-3 text-dark">Pending</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Match Score:</strong> 
+                        {% if application.similarity_score %}
+                            <span class="badge {% if application.similarity_score >= 70 %}bg-success{% elif application.similarity_score >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %} py-2 px-3">
+                                {{ application.similarity_score }}%
+                            </span>
+                        {% else %}
+                            <span class="text-muted">Not available</span>
+                        {% endif %}
+                    </p>
+                    
+                    <div class="mt-4">
+                        {% if application.status != 'shortlisted' %}
+                            <a href="{{ url_for('hr.shortlist_application', application_id=application.id) }}" class="btn btn-success w-100 mb-2">
+                                <i class="fas fa-user-check me-1"></i> Shortlist Candidate
+                            </a>
+                        {% endif %}
+                        
+                        {% if application.status != 'rejected' %}
+                            <a href="{{ url_for('hr.reject_application', application_id=application.id) }}" class="btn btn-danger w-100">
+                                <i class="fas fa-times-circle me-1"></i> Reject Application
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Resume Preview</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if resume_path.endswith('.pdf') %}
+                        <div class="ratio ratio-1x1">
+                            <iframe src="{{ url_for('hr.serve_resume', application_id=application.id) }}" allowfullscreen></iframe>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info m-3">
+                            <p>This file cannot be previewed directly. Please download to view.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('hr.serve_resume', application_id=application.id) }}" class="btn btn-primary" target="_blank">
+                        <i class="fas fa-download me-1"></i> Download Resume
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
